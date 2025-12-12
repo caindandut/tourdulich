@@ -137,12 +137,10 @@ public class BookingManagementServlet extends HttpServlet {
             if (bookingOpt.isPresent()) {
                 DatTour booking = bookingOpt.get();
                 
-                // Load related data
                 if (booking.getKhachhangId() != null) {
                     Optional<KhachHang> khachHangOpt = khachHangDAO.findById(booking.getKhachhangId());
                     if (khachHangOpt.isPresent()) {
                         KhachHang khachHang = khachHangOpt.get();
-                        // Load NguoiDung
                         if (khachHang.getNguoidungId() != null) {
                             Optional<NguoiDung> nguoiDungOpt = nguoiDungDAO.findById(khachHang.getNguoidungId());
                             if (nguoiDungOpt.isPresent()) {

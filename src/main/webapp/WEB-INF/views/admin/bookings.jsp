@@ -141,7 +141,8 @@
                                 <td>
                                     <div class="table-meta">
                                         <strong>Ngày khởi hành:</strong> <%= booking.getNgayKhoihanh() != null ? booking.getNgayKhoihanh().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "N/A" %><br>
-                                        <strong>Số người:</strong> <%= booking.getSoLuongNguoi() %><br>
+                                        <strong>Số phòng:</strong> <%= booking.getSoPhong() > 0 ? booking.getSoPhong() : 1 %> phòng<br>
+                                        <strong>Số người:</strong> <%= booking.getSoLuongNguoi() %> người<br>
                                         <strong>Tổng giá:</strong> <span class="table-price"><%= booking.getTongtien() != null ? String.format("%,.0f", booking.getTongtien()) : "0" %>VND</span><br>
                                         <strong>Ghi chú:</strong> <%= booking.getGhichu() != null && !booking.getGhichu().isEmpty() ? booking.getGhichu() : "" %>
                                     </div>

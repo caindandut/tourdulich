@@ -169,6 +169,10 @@
                                 <td class="detail-value"><%= booking.getNgayKhoihanh() != null ? booking.getNgayKhoihanh().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "N/A" %></td>
                             </tr>
                             <tr>
+                                <th>🛏️ Số phòng</th>
+                                <td class="detail-value"><%= booking.getSoPhong() > 0 ? booking.getSoPhong() : 1 %> phòng</td>
+                            </tr>
+                            <tr>
                                 <th>👥 Số người</th>
                                 <td class="detail-value"><%= booking.getSoLuongNguoi() %> người</td>
                             </tr>

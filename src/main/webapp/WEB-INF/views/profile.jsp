@@ -429,6 +429,7 @@
                             <div class="booking-meta">
                                 <strong>Ngày đặt:</strong> <%= ngayDat != null ? ngayDat.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "---" %><br>
                                 <strong>Ngày khởi hành:</strong> <%= booking.getNgayKhoihanh() != null ? booking.getNgayKhoihanh().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "---" %><br>
+                                <strong>Số phòng:</strong> <%= booking.getSoPhong() > 0 ? booking.getSoPhong() : 1 %> phòng<br>
                                 <strong>Số người:</strong> <%= booking.getSoLuongNguoi() %> người
                             </div>
                             <div class="booking-price"><%= String.format("%,.0f", booking.getTongtien()) %> VND</div>

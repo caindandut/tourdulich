@@ -76,7 +76,6 @@ public class BookingDetailServlet extends HttpServlet {
                 booking.setNgaydat(booking.getCreatedAt());
             }
 
-            // Reuse booking-success view to show booking details
             request.setAttribute("tour", booking.getTour() != null ? booking.getTour() : tourOpt.orElse(new Tour()));
             request.setAttribute("booking", booking);
             request.getRequestDispatcher("/WEB-INF/views/booking-success.jsp").forward(request, response);

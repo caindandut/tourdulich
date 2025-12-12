@@ -111,6 +111,7 @@ CREATE TABLE DatTour (
     khachhang_id INT NOT NULL,
     tour_id INT NOT NULL,
     so_luong_nguoi INT NOT NULL DEFAULT 1,
+    so_phong INT NOT NULL DEFAULT 1,
     tongtien DECIMAL(15,2),
     ngay_khoihanh DATETIME,
     ghichu TEXT,

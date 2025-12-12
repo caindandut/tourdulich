@@ -77,8 +77,8 @@ public class DatTourDAOImpl implements DatTourDAO {
             datTour.getMadattour(), datTour.getKhachhangId(), datTour.getTourId(), 
             datTour.getSoLuongNguoi(), datTour.getTongtien(), datTour.getNgayKhoihanh());
         
-        String sql = "INSERT INTO DatTour (madattour, khachhang_id, tour_id, so_luong_nguoi, tongtien, ngay_khoihanh, ghichu, tinhtrang) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO DatTour (madattour, khachhang_id, tour_id, so_luong_nguoi, so_phong, tongtien, ngay_khoihanh, ghichu, tinhtrang) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         logger.info("SQL: {}", sql);
         
@@ -91,18 +91,19 @@ public class DatTourDAOImpl implements DatTourDAO {
             pstmt.setLong(2, datTour.getKhachhangId());
             pstmt.setLong(3, datTour.getTourId());
             pstmt.setInt(4, datTour.getSoLuongNguoi());
-            pstmt.setBigDecimal(5, datTour.getTongtien());
+            pstmt.setInt(5, datTour.getSoPhong() > 0 ? datTour.getSoPhong() : 1);
+            pstmt.setBigDecimal(6, datTour.getTongtien());
             
             if (datTour.getNgayKhoihanh() != null) {
-                pstmt.setTimestamp(6, Timestamp.valueOf(datTour.getNgayKhoihanh()));
+                pstmt.setTimestamp(7, Timestamp.valueOf(datTour.getNgayKhoihanh()));
                 logger.info("NgayKhoihanh set: {}", Timestamp.valueOf(datTour.getNgayKhoihanh()));
             } else {
-                pstmt.setNull(6, Types.TIMESTAMP);
+                pstmt.setNull(7, Types.TIMESTAMP);
                 logger.info("NgayKhoihanh set to NULL");
             }
             
-            pstmt.setString(7, datTour.getGhichu());
-            pstmt.setString(8, datTour.getTinhtrang() != null ? datTour.getTinhtrang().name() : "PENDING");
+            pstmt.setString(8, datTour.getGhichu());
+            pstmt.setString(9, datTour.getTinhtrang() != null ? datTour.getTinhtrang().name() : "PENDING");
             
             logger.info("Executing INSERT query...");
             int affected = pstmt.executeUpdate();
@@ -326,6 +327,11 @@ public class DatTourDAOImpl implements DatTourDAO {
         datTour.setKhachhangId(rs.getLong("khachhang_id"));
         datTour.setTourId(rs.getLong("tour_id"));
         datTour.setSoLuongNguoi(rs.getInt("so_luong_nguoi"));
+        try {
+            datTour.setSoPhong(rs.getInt("so_phong"));
+        } catch (SQLException e) {
+            datTour.setSoPhong(1);
+        }
         datTour.setTongtien(rs.getBigDecimal("tongtien"));
         
         Timestamp ngayKhoihanh = rs.getTimestamp("ngay_khoihanh");

@@ -1,7 +1,6 @@
 package com.tourdulich.model;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class DatTour {
@@ -10,6 +9,7 @@ public class DatTour {
     private Long khachhangId;
     private Long tourId;
     private int soLuongNguoi;
+    private int soPhong;
     private BigDecimal tongtien;
     private LocalDateTime ngayKhoihanh;
     private String ghichu;
@@ -79,6 +79,14 @@ public class DatTour {
 
     public void setSoLuongNguoi(int soLuongNguoi) {
         this.soLuongNguoi = soLuongNguoi;
+    }
+
+    public int getSoPhong() {
+        return soPhong;
+    }
+
+    public void setSoPhong(int soPhong) {
+        this.soPhong = soPhong;
     }
 
     public BigDecimal getTongtien() {

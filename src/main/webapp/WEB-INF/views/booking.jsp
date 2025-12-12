@@ -17,6 +17,8 @@
                                 String selectedSoPhongParam=(String) request.getAttribute("selectedSoPhong");
                                 String selectedNgayDiParam=(String) request.getAttribute("selectedNgayDi");
                                 String selectedNgayVeParam=(String) request.getAttribute("selectedNgayVe");
+                                String selectedHotelIdParam=(String) request.getAttribute("selectedHotelId");
+                                com.tourdulich.model.KhachSan selectedHotel=(com.tourdulich.model.KhachSan) request.getAttribute("selectedHotel");
                                 int selectedSoNguoi=2;
                                 int selectedSoPhong=1;
                                 LocalDate selectedNgayDi=tour.getNgaykhoihanh();
@@ -368,6 +370,9 @@
                                                         value="<%= selectedNgayDi.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) %>">
                                                     <input type="hidden" name="ngayve"
                                                         value="<%= selectedNgayVe.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) %>">
+                                                    <% if (selectedHotelIdParam != null && !selectedHotelIdParam.isEmpty()) { %>
+                                                    <input type="hidden" name="hotelId" value="<%= selectedHotelIdParam %>">
+                                                    <% } %>
 
                                                     <p class="form-agreement">
                                                         Bằng việc tiếp tục, tôi đồng ý với các
@@ -439,8 +444,27 @@
                                         <div class="booking-total">
                                             <span class="booking-total-label">Giá</span>
                                             <span class="booking-total-value" id="displayTongTien">
-                                                <%= String.format("%,.0f", tour.getGia().multiply(new
-                                                    java.math.BigDecimal(selectedSoNguoi))) %> VND
+                                                <%
+                                                    java.math.BigDecimal giaTour = tour.getGia().multiply(new java.math.BigDecimal(selectedSoNguoi));
+                                                    java.math.BigDecimal giaPhong = java.math.BigDecimal.ZERO;
+                                                    
+                                                   
+                                                    int soDem = 1;
+                                                    if (selectedNgayDi != null && selectedNgayVe != null) {
+                                                        long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(selectedNgayDi, selectedNgayVe);
+                                                        soDem = (int) Math.max(1, daysBetween);
+                                                    }
+                                                    
+                                                    
+                                                    if (selectedHotel != null && selectedHotel.getGia() != null) {
+                                                        giaPhong = selectedHotel.getGia()
+                                                            .multiply(new java.math.BigDecimal(selectedSoPhong))
+                                                            .multiply(new java.math.BigDecimal(soDem));
+                                                    }
+                                                    
+                                                    java.math.BigDecimal tongTien = giaTour.add(giaPhong);
+                                                %>
+                                                <%= String.format("%,.0f", tongTien) %> VND
                                             </span>
                                         </div>
                                     </div>

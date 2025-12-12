@@ -464,7 +464,7 @@
                 <div class="booking-detail-row">
                     <span class="booking-detail-label">Bạn đã chọn:</span>
                     <span class="booking-detail-value">
-                        1 phòng, <%= booking.getSoLuongNguoi() %> người
+                        <%= booking.getSoPhong() > 0 ? booking.getSoPhong() : 1 %> phòng, <%= booking.getSoLuongNguoi() %> người
                     </span>
                 </div>
             </div>

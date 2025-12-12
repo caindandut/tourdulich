@@ -78,13 +78,11 @@ public class ReviewManagementServlet extends HttpServlet {
         try {
             List<DanhGia> reviews = danhGiaDAO.findAll();
             
-            // Load related data
             for (DanhGia review : reviews) {
                 if (review.getKhachhangId() != null) {
                     Optional<KhachHang> khachHangOpt = khachHangDAO.findById(review.getKhachhangId());
                     if (khachHangOpt.isPresent()) {
                         KhachHang khachHang = khachHangOpt.get();
-                        // Load NguoiDung
                         if (khachHang.getNguoidungId() != null) {
                             Optional<NguoiDung> nguoiDungOpt = nguoiDungDAO.findById(khachHang.getNguoidungId());
                             if (nguoiDungOpt.isPresent()) {

@@ -1,9 +1,12 @@
 package com.tourdulich.controller;
 
 import com.tourdulich.dao.KhachHangDAO;
+import com.tourdulich.dao.KhachSanDAO;
 import com.tourdulich.dao.impl.KhachHangDAOImpl;
+import com.tourdulich.dao.impl.KhachSanDAOImpl;
 import com.tourdulich.model.DatTour;
 import com.tourdulich.model.KhachHang;
+import com.tourdulich.model.KhachSan;
 import com.tourdulich.model.NguoiDung;
 import com.tourdulich.model.Tour;
 import com.tourdulich.service.BookingService;
@@ -22,7 +25,6 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @WebServlet("/booking")
@@ -33,6 +35,7 @@ public class BookingServlet extends HttpServlet {
     private final TourService tourService = new TourServiceImpl();
     private final BookingService bookingService = new BookingServiceImpl();
     private final KhachHangDAO khachHangDAO = new KhachHangDAOImpl();
+    private final KhachSanDAO khachSanDAO = new KhachSanDAOImpl();
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -69,11 +72,28 @@ public class BookingServlet extends HttpServlet {
                 String soPhongParam = request.getParameter("soPhong");
                 String ngayDiParam = request.getParameter("ngaydi");
                 String ngayVeParam = request.getParameter("ngayve");
+                String hotelIdParam = request.getParameter("hotelId");
                 
                 request.setAttribute("selectedSoNguoi", soNguoiParam);
                 request.setAttribute("selectedSoPhong", soPhongParam);
                 request.setAttribute("selectedNgayDi", ngayDiParam);
                 request.setAttribute("selectedNgayVe", ngayVeParam);
+                request.setAttribute("selectedHotelId", hotelIdParam);
+                
+                // Lấy thông tin khách sạn nếu có
+                KhachSan selectedHotel = null;
+                if (hotelIdParam != null && !hotelIdParam.isEmpty()) {
+                    try {
+                        Long hotelId = Long.parseLong(hotelIdParam);
+                        Optional<KhachSan> hotelOpt = khachSanDAO.findById(hotelId);
+                        if (hotelOpt.isPresent()) {
+                            selectedHotel = hotelOpt.get();
+                            request.setAttribute("selectedHotel", selectedHotel);
+                        }
+                    } catch (NumberFormatException e) {
+                        logger.warn("HotelID không hợp lệ: {}", hotelIdParam);
+                    }
+                }
                 
                 KhachHang khachHang = (KhachHang) session.getAttribute("khachHang");
                 
@@ -138,10 +158,21 @@ public class BookingServlet extends HttpServlet {
         try {
             Long tourId = Long.parseLong(request.getParameter("tourId"));
             int soLuongNguoi = Integer.parseInt(request.getParameter("soLuongNguoi"));
+            String soPhongStr = request.getParameter("soPhong");
+            int soPhong = 1; 
+            if (soPhongStr != null && !soPhongStr.isEmpty()) {
+                try {
+                    soPhong = Integer.parseInt(soPhongStr);
+                } catch (NumberFormatException e) {
+                    logger.warn("Số phòng không hợp lệ: {}, sử dụng mặc định 1", soPhongStr);
+                }
+            }
             String ngayKhoihanhStr = request.getParameter("ngayKhoihanh");
+            String ngayVeStr = request.getParameter("ngayve");
+            String hotelIdStr = request.getParameter("hotelId");
             String ghichu = request.getParameter("ghichu");
             
-            logger.info("TourID: {}, SoLuong: {}, NgayKhoihanh: {}", tourId, soLuongNguoi, ngayKhoihanhStr);
+            logger.info("TourID: {}, SoLuong: {}, SoPhong: {}, NgayKhoihanh: {}, HotelID: {}", tourId, soLuongNguoi, soPhong, ngayKhoihanhStr, hotelIdStr);
             
             if (soLuongNguoi <= 0) {
                 logger.warn("Số lượng người không hợp lệ: {}", soLuongNguoi);
@@ -161,18 +192,66 @@ public class BookingServlet extends HttpServlet {
             logger.info("Tìm thấy tour: {} - Giá: {}", tour.getTentour(), tour.getGia());
             
             LocalDate ngayKhoihanh = null;
+            LocalDate ngayVe = null;
             if (ngayKhoihanhStr != null && !ngayKhoihanhStr.isEmpty()) {
                 ngayKhoihanh = LocalDate.parse(ngayKhoihanhStr);
                 logger.info("Ngày khởi hành parsed: {}", ngayKhoihanh);
             }
+            if (ngayVeStr != null && !ngayVeStr.isEmpty()) {
+                ngayVe = LocalDate.parse(ngayVeStr);
+                logger.info("Ngày về parsed: {}", ngayVe);
+            }
             
-            BigDecimal tongTien = tour.getGia().multiply(new BigDecimal(soLuongNguoi));
-            logger.info("Tổng tiền tính được: {}", tongTien);
+            // Tính số đêm
+            int soDem = 1;
+            if (ngayKhoihanh != null && ngayVe != null) {
+                long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(ngayKhoihanh, ngayVe);
+                soDem = (int) Math.max(1, daysBetween);
+            } else if (tour.getThoiluong() != null) {
+                // Nếu không có ngày cụ thể, tính từ thoiluong
+                try {
+                    String numStr = tour.getThoiluong().replaceAll("[^0-9]", " ").trim().split("\\s+")[0];
+                    int days = Integer.parseInt(numStr);
+                    soDem = Math.max(1, days - 1); // Trừ 1 vì thường là số ngày, số đêm = số ngày - 1
+                } catch (Exception e) {
+                    soDem = 2; // Mặc định 2 đêm
+                }
+            }
+            
+            // Tính giá tour
+            BigDecimal giaTour = tour.getGia().multiply(new BigDecimal(soLuongNguoi));
+            
+            // Tính giá phòng
+            BigDecimal giaPhong = BigDecimal.ZERO;
+            if (hotelIdStr != null && !hotelIdStr.isEmpty()) {
+                try {
+                    Long hotelId = Long.parseLong(hotelIdStr);
+                    java.util.Optional<KhachSan> hotelOpt = khachSanDAO.findById(hotelId);
+                    if (hotelOpt.isPresent()) {
+                        KhachSan hotel = hotelOpt.get();
+                        if (hotel.getGia() != null) {
+                            giaPhong = hotel.getGia()
+                                .multiply(new BigDecimal(soPhong))
+                                .multiply(new BigDecimal(soDem));
+                            logger.info("Giá phòng: {} × {} phòng × {} đêm = {}", 
+                                hotel.getGia(), soPhong, soDem, giaPhong);
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    logger.warn("HotelID không hợp lệ: {}", hotelIdStr);
+                }
+            }
+            
+            // Tổng tiền = Giá tour + Giá phòng
+            BigDecimal tongTien = giaTour.add(giaPhong);
+            logger.info("Tổng tiền: Giá tour ({} × {}) + Giá phòng = {}", 
+                tour.getGia(), soLuongNguoi, tongTien);
             
             DatTour datTour = new DatTour();
             datTour.setKhachhangId(khachHang.getId());
             datTour.setTourId(tourId);
             datTour.setSoLuongNguoi(soLuongNguoi);
+            datTour.setSoPhong(soPhong);
             datTour.setTongtien(tongTien);
             datTour.setNgayKhoihanh(ngayKhoihanh != null ? ngayKhoihanh.atStartOfDay() : null);
             datTour.setGhichu(ghichu);

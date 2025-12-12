@@ -97,7 +97,7 @@ public class TourDetailServlet extends HttpServlet {
                 request.setAttribute("hotels", hotels);
                 request.setAttribute("currentUser", currentUser);
                 
-                // #region agent log
+               
                 try {
                     java.io.FileWriter fw = new java.io.FileWriter("d:\\TourDuLich\\.cursor\\debug.log", true);
                     fw.write("{\"timestamp\":" + System.currentTimeMillis() + ",\"location\":\"TourDetailServlet.java:100\",\"message\":\"Before forwarding to JSP\",\"data\":{\"jspPath\":\"/WEB-INF/views/tour-detail.jsp\",\"tourId\":" + tourId + ",\"tourName\":\"" + (tour.getTentour() != null ? tour.getTentour().replace("\"", "\\\"") : "null") + "\"},\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\"}\n");
@@ -107,7 +107,7 @@ public class TourDetailServlet extends HttpServlet {
                 
                 request.getRequestDispatcher("/WEB-INF/views/tour-detail.jsp").forward(request, response);
                 
-                // #region agent log
+               
                 try {
                     java.io.FileWriter fw = new java.io.FileWriter("d:\\TourDuLich\\.cursor\\debug.log", true);
                     fw.write("{\"timestamp\":" + System.currentTimeMillis() + ",\"location\":\"TourDetailServlet.java:105\",\"message\":\"After forwarding to JSP\",\"data\":{},\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\"}\n");
@@ -119,7 +119,7 @@ public class TourDetailServlet extends HttpServlet {
             }
             
         } catch (Exception e) {
-            // #region agent log
+       
             try {
                 java.io.FileWriter fw = new java.io.FileWriter("d:\\TourDuLich\\.cursor\\debug.log", true);
                 java.io.StringWriter sw = new java.io.StringWriter();
